@@ -1,22 +1,38 @@
-import { Component, OnInit } from '@angular/core';
+import { Component } from '@angular/core';
+import { ExcelService } from './excel.service'; // Asegúrate de ajustar la ruta según la estructura de tu proyecto
+import { DtoServiceMock } from './dto.service.mock'; // Asegúrate de ajustar la ruta según la estructura de tu proyecto
 
 @Component({
   selector: 'app-meses',
   templateUrl: './meses.component.html',
   styleUrls: ['./meses.component.css']
 })
-export class mesesComponent implements OnInit {
+export class mesesComponent {
   lmesesini: { label: string, value: string }[] = [];
-  anioactual: number = new Date().getFullYear();
-  fperiodo: number | null = this.anioactual;
-  finicio: string = ''; // Suponiendo que es el mes seleccionado
+  fperiodo: number | null = new Date().getFullYear();
+  finicio: string = '';
   mensajeError: string = '';
 
-  constructor() { }
-
-  ngOnInit() {
+  constructor(private excelService: ExcelService, private dtoService: DtoServiceMock) {
     this.fijarListaMeses();
-    this.fperiodo = this.anioactual;
+  }
+
+  setPeriodo(periodo: string) {
+    const añoActual = new Date().getFullYear();
+    const añoMinimo = 1900;
+    const valor = Number(periodo);
+
+    if (!isNaN(valor)) {
+      if (valor > añoActual) {
+        this.fperiodo = añoActual;
+      } else if (valor < añoMinimo) {
+        this.fperiodo = añoMinimo;
+      } else {
+        this.fperiodo = valor;
+      }
+    } else {
+      this.fperiodo = añoActual;
+    }
   }
 
   fijarListaMeses() {
@@ -36,43 +52,45 @@ export class mesesComponent implements OnInit {
     ];
   }
 
-  setPeriodo(value: string) {
-    const numValue = Number(value);
-    if (!isNaN(numValue) && numValue >= 1900 && numValue <= this.anioactual) {
-      this.fperiodo = numValue;
-    } else {
-      this.mostrarMensajeError("PERIODO NO VÁLIDO");
-    }
-  }
-
-  estaVacio(valor: any): boolean {
-    return valor === null || valor === undefined || valor === '';
-  }
-
-  mostrarMensajeError(mensaje: string) {
-    this.mensajeError = mensaje;
-  }
-
   consultar() {
-    if (this.fperiodo === null) {
-      this.mostrarMensajeError("INGRESE EL PERIODO");
+    if (this.fperiodo === null || this.fperiodo === undefined || this.fperiodo === 0) {
+      this.mensajeError = "INGRESE EL PERIODO";
       return;
     }
-  
-    if (this.fperiodo > this.anioactual) {
-      this.mostrarMensajeError("PERIODO SUPERIOR AL AÑO ACTUAL");
+    if (this.fperiodo > new Date().getFullYear()) {
+      this.mensajeError = "PERIODO SUPERIOR AL AÑO ACTUAL";
       return;
     }
-  
-    if (this.estaVacio(this.finicio)) {
-      this.mostrarMensajeError("ESCOGER MES DE CONSULTA");
+    if (!this.finicio) {
+      this.mensajeError = "ESCOGER MES DE CONSULTA";
       return;
     }
-  
+    this.mensajeError = '';
     this.generarReporte();
   }
+  
 
   generarReporte() {
-    // Lógica para generar el reporte
+    // Simulación de generación de reporte
+    console.log('Generando reporte...');
+  }
+
+  exportarTxt(datos: string[]) {
+    const blob = new Blob([datos.join('\n')], { type: 'text/plain' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'reporte.txt';
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  imprimirExcel() {
+    const datos = [
+      ['Columna1', 'Columna2'],
+      ['Dato1', 'Dato2'],
+      ['Dato3', 'Dato4']
+    ];
+    this.excelService.exportAsExcelFile(datos, 'reporte');
   }
 }

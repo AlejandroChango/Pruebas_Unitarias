@@ -1,27 +1,20 @@
 <div>
-    <h2>Lista de Meses</h2>
-    <label for="periodo">Periodo:</label>
-    <input
-      id="periodo"
-      name="periodo"
-      [value]="fperiodo"
-      (input)="setPeriodo($event.target.value)"
-      type="number"
-      min="1900"
-      [max]="anioactual"
-    >
+    <h2>Reporte de Meses</h2>
+    
+    <label for="periodo">Año:</label>
+    <input id="periodo" [(ngModel)]="fperiodo" (ngModelChange)="setPeriodo($event)" type="text" />
   
-    <label for="meses">Selecciona un mes:</label>
-    <select id="meses" name="meses" [(ngModel)]="finicio">
-      <option *ngFor="let mes of lmesesini" [value]="mes.value">
-        {{ mes.label }}
-      </option>
+    <label for="inicio">Mes:</label>
+    <select id="inicio" [(ngModel)]="finicio">
+      <option value="">Seleccionar mes</option>
+      <option *ngFor="let mes of lmesesini" [value]="mes.value">{{ mes.label }}</option>
     </select>
   
     <button (click)="consultar()">Consultar</button>
   
-    <div *ngIf="mensajeError" class="error-message">
-      {{ mensajeError }}
-    </div>
+    <button (click)="imprimirExcel()">Exportar a Excel</button>
+    <button (click)="imprimir()">Generar TXT</button>
+  
+    <p *ngIf="mensajeError" class="error">{{ mensajeError }}</p>
   </div>
   
